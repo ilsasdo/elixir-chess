@@ -27,7 +27,8 @@ defmodule ChessTest do
     count = board
       |> Map.keys() # it's not elm: add ()
       |> Enum.map(fn k -> board[k] end) #it's not elm: add ()
-      |> Enum.filter(fn k -> map_size(k) == 8 end) # add () without any space!!
+      |> Enum.map(fn k -> map_size(k) end) #it's not elm: add ()
+      |> Enum.filter(fn size -> size == 8 end)
       |> length()
 
     assert count == 8
