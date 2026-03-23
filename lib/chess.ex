@@ -40,8 +40,22 @@ defmodule Chess do
     list_moves(chessboard, {file, rank}, chessboard[rank][file])
   end
 
-  def list_moves(_chessboard, {_file, _rank}, {:pawn, _color}) do
-    []
+  def list_moves(chessboard, {file, rank}, {:pawn, :white}) do
+    moves = []
+    # the pawn can go forward one step when free:
+    forward_square = get_square(chessboard, {file, rank + 1})
+    case forward_square do
+      {:empty, :empty} ->
+        moves = [ {file, rank + 1} | moves]
+    end
+
+    # the pawn can take on upper left/right
+
+    # if the pawn is at starting position, it can go two step forward
+  end
+
+  def flip_board(chessboard) do
+
   end
 
   def get_square(chessboard, {file, rank}) do
@@ -56,7 +70,7 @@ defmodule Chess do
       :h -> 8
       _ -> file
     end
-    chessboard[rank][f]
+    {:just, chessboard[rank][f]}
   end
 
 end
