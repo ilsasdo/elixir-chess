@@ -52,37 +52,4 @@ defmodule ChessTest do
     assert moved[{0, 1}] == :empty
     assert moved[{0, 2}] == {:pawn, :white}
   end
-
-
-  #  test "all ranks must be of size 8" do
-  #    board = Board.new_board()
-  #    assert board[1] |> map_size == 8
-  #    assert board[2] |> map_size == 8
-  #    assert board[3] |> map_size == 8
-  #    assert board[4] |> map_size == 8
-  #    assert board[5] |> map_size == 8
-  #    assert board[6] |> map_size == 8
-  #    assert board[7] |> map_size == 8
-  #    assert board[8] |> map_size == 8
-  #  end
-  #
-  #  test "all ranks must be of size 8 with map accessor" do
-  #    board = Board.new_board()
-  #    count = board
-  #      |> Map.keys() # it's not elm: add ()
-  #      |> Enum.map(fn k -> board[k] end) #it's not elm: add ()
-  #      |> Enum.map(fn k -> map_size(k) end) #it's not elm: add ()
-  #      |> Enum.filter(fn size -> size == 8 end)
-  #      |> length()
-  #
-  #    assert count == 8
-  #  end
-  #
-  #  test "accessing chessboard" do
-  #    board = Board.new_board()
-  #    assert Board.get_square(board, {:a, 1}) == {:rook, :white}
-  #    assert Board.get_square(board, {:a, 2}) == {:pawn, :white}
-  #    assert Board.get_square(board, {:b, 8}) == {:knight, :black}
-  #    assert Board.get_square(board, {:b, 7}) == {:pawn, :black}
-  #  end
 end
