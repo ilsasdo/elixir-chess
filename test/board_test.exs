@@ -30,6 +30,13 @@ defmodule ChessTest do
   test "get available moves for pawn" do
     board = Board.new()
     assert Board.get_moves(board.squares, {0, 1}) == [{0, 2}, {0, 3}]
+    assert Board.get_moves(board.squares, "a2") == ["a3", "a4"]
+    assert Board.get_moves(board.squares, "e7") == ["e6", "e5"]
+  end
+
+  test "verify available moves for knight" do
+    board = Board.new()
+    assert Board.get_moves(board.squares, "b1") |> Enum.sort == ["a3", "c3"]
   end
 
   test "verify move" do
