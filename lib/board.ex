@@ -97,6 +97,7 @@ defmodule Board do
   @spec get_square(squares(), integer(), integer()) :: square()
   def get_square(squares, x, y) do
     square = squares[{x, y}]
+
     if is_nil(square) do
       :empty
     else
@@ -111,12 +112,22 @@ defmodule Board do
       :s -> {x, y - 1}
       :e -> {x + 1, y}
       :w -> {x - 1, y}
+      :ne -> ({x, y} |> pos(:n) |> pos(:e))
+      :nw -> ({x, y} |> pos(:n) |> pos(:w))
+      :se -> ({x, y} |> pos(:s) |> pos(:e))
+      :sw -> ({x, y} |> pos(:s) |> pos(:w))
     end
+  end
+
+  def pos_range(p, direction) do
+    Stream.unfold(pos(p, direction), fn p2 -> {p2, pos(p2, direction)} end)
+    |> Enum.take_while(&is_valid_position/1)
   end
 
   @spec get_moves(squares(), position()) :: [position()]
   def get_moves(squares, {x, y}) do
     sq = get_square(squares, {x, y})
+
     case sq do
       :empty -> []
       {shape, color} -> get_moves(squares, {x, y}, shape, color)
@@ -136,12 +147,14 @@ defmodule Board do
     pos_ne = pos(pos_n, :e)
     pos_nw = pos(pos_n, :w)
 
-    [ {pos_n, &is_empty/1},
+    [
+      {pos_n, &is_empty/1},
       {pos_nn, &(is_empty(&1) && is_pawn_starting_position(position, :white))},
-      {pos_ne, &(is_opponent(&1, :white))},
-      {pos_nw, &(is_opponent(&1, :white))}]
-      |> Enum.filter(fn {p, f} -> f.(Board.get_square(squares, p)) end)
-      |> Enum.map(fn {p, f} -> p end)
+      {pos_ne, &is_opponent(&1, :white)},
+      {pos_nw, &is_opponent(&1, :white)}
+    ]
+    |> Enum.filter(fn {p, f} -> f.(Board.get_square(squares, p)) end)
+    |> Enum.map(fn {p, _f} -> p end)
   end
 
   @spec get_moves(squares(), position()) :: [position()]
@@ -151,12 +164,14 @@ defmodule Board do
     pos_se = pos(pos_s, :e)
     pos_sw = pos(pos_s, :w)
 
-    [ {pos_s, &is_empty/1},
+    [
+      {pos_s, &is_empty/1},
       {pos_ss, &(is_empty(&1) && is_pawn_starting_position(position, :black))},
-      {pos_se, &(is_opponent(&1, :black))},
-      {pos_sw, &(is_opponent(&1, :black))}]
-      |> Enum.filter(fn {p, f} -> f.(Board.get_square(squares, p)) end)
-      |> Enum.map(fn {p, f} -> p end)
+      {pos_se, &is_opponent(&1, :black)},
+      {pos_sw, &is_opponent(&1, :black)}
+    ]
+    |> Enum.filter(fn {p, f} -> f.(Board.get_square(squares, p)) end)
+    |> Enum.map(fn {p, _f} -> p end)
   end
 
   @spec get_moves(squares(), position()) :: [position()]
@@ -170,28 +185,100 @@ defmodule Board do
     pos_wwn = position |> pos(:w) |> pos(:w) |> pos(:n)
     pos_wws = position |> pos(:w) |> pos(:w) |> pos(:s)
 
-    [ {pos_nne, &(is_empty_or_opponent(&1, color))},
-      {pos_nnw, &(is_empty_or_opponent(&1, color))},
-      {pos_sse, &(is_empty_or_opponent(&1, color))},
-      {pos_ssw, &(is_empty_or_opponent(&1, color))},
-      {pos_een, &(is_empty_or_opponent(&1, color))},
-      {pos_ees, &(is_empty_or_opponent(&1, color))},
-      {pos_wwn, &(is_empty_or_opponent(&1, color))},
-      {pos_wws, &(is_empty_or_opponent(&1, color))},
-    ] |> Enum.filter(fn {p, _f} -> is_valid_position(p) end)
-      |> Enum.filter(fn {p, f} -> f.(Board.get_square(squares, p)) end)
-      |> Enum.map(fn {p, _f} -> p end)
+    [
+      pos_nne,
+      pos_nnw,
+      pos_sse,
+      pos_ssw,
+      pos_een,
+      pos_ees,
+      pos_wwn,
+      pos_wws
+    ]
+    |> Enum.filter(fn p -> is_valid_position(p) end)
+    |> Enum.filter(fn p -> is_empty_or_opponent(Board.get_square(squares, p), color) end)
+  end
+
+  @spec get_moves(squares(), position()) :: [position()]
+  def get_moves(squares, {x, y}, :rook, color) do
+    range_n = pos_range({x, y}, :n) |> take_until_inclusive(fn p -> !is_empty(Board.get_square(squares, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(Board.get_square(squares, p), color) end)
+    range_s = pos_range({x, y}, :s) |> take_until_inclusive(fn p -> !is_empty(Board.get_square(squares, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(Board.get_square(squares, p), color) end)
+    range_w = pos_range({x, y}, :w) |> take_until_inclusive(fn p -> !is_empty(Board.get_square(squares, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(Board.get_square(squares, p), color) end)
+    range_e = pos_range({x, y}, :e) |> take_until_inclusive(fn p -> !is_empty(Board.get_square(squares, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(Board.get_square(squares, p), color) end)
+
+    range_n ++ range_e ++ range_s ++ range_w
+  end
+
+  @spec get_moves(squares(), position()) :: [position()]
+  def get_moves(squares, {x, y}, :bishop, color) do
+    range_ne = pos_range({x, y}, :ne) |> take_until_inclusive(fn p -> !is_empty(Board.get_square(squares, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(Board.get_square(squares, p), color) end)
+    range_nw = pos_range({x, y}, :nw) |> take_until_inclusive(fn p -> !is_empty(Board.get_square(squares, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(Board.get_square(squares, p), color) end)
+    range_se = pos_range({x, y}, :se) |> take_until_inclusive(fn p -> !is_empty(Board.get_square(squares, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(Board.get_square(squares, p), color) end)
+    range_sw = pos_range({x, y}, :sw) |> take_until_inclusive(fn p -> !is_empty(Board.get_square(squares, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(Board.get_square(squares, p), color) end)
+
+    range_ne ++ range_nw ++ range_se ++ range_sw
+  end
+
+  @spec get_moves(squares(), position()) :: [position()]
+  def get_moves(squares, {x, y}, :queen, color) do
+    Enum.concat(get_moves(squares, {x, y}, :bishop, color), get_moves(squares, {x, y}, :rook, color))
+  end
+
+  @spec get_moves(squares(), position()) :: [position()]
+  def get_moves(squares, position, :king, color) do
+    pos_n = position |> pos(:n)
+    pos_s = position |> pos(:s)
+    pos_e = position |> pos(:e)
+    pos_w = position |> pos(:w)
+    pos_ne = position |> pos(:ne)
+    pos_nw = position |> pos(:nw)
+    pos_se = position |> pos(:se)
+    pos_sw = position |> pos(:sw)
+
+    [
+      pos_n,
+      pos_s,
+      pos_e,
+      pos_w,
+      pos_ne,
+      pos_nw,
+      pos_se,
+      pos_sw
+    ]
+    |> Enum.filter(fn p -> is_valid_position(p) end)
+    |> Enum.filter(fn p -> is_empty_or_opponent(Board.get_square(squares, p), color) end)
+  end
+
+  defp take_until_inclusive([], _predicate) do
+    []
+  end
+
+  defp take_until_inclusive([head | tail], predicate) do
+    if predicate.(head) do
+      [head]
+    else
+      [head | take_until_inclusive(tail, predicate)]
+    end
+  end
+
+  @spec move(squares(), position(), position()) :: squares()
+  def move(squares, position_from, position_to)
+      when is_binary(position_from) and is_binary(position_to) do
+    pos_from = string_to_position(position_from)
+    pos_to = string_to_position(position_to)
+    move(squares, pos_from, pos_to)
   end
 
   @spec move(squares(), position(), position()) :: squares()
   def move(squares, position_from, position_to) do
     piece_from = squares[position_from]
+
     squares
-      |> Map.put(position_from, :empty)
-      |> Map.put(position_to, piece_from)
+    |> Map.put(position_from, :empty)
+    |> Map.put(position_to, piece_from)
   end
 
-  defp is_pawn_starting_position({x, y}, color) do
+  defp is_pawn_starting_position({_x, y}, color) do
     case color do
       :white -> y == 1
       :black -> y == 6
@@ -209,7 +296,7 @@ defmodule Board do
     end
   end
 
-  defp is_opponent({shape, color}, my_color) do
+  defp is_opponent({_shape, color}, my_color) do
     if color == my_color do
       false
     else
@@ -217,7 +304,7 @@ defmodule Board do
     end
   end
 
-  defp is_opponent(:empty, my_color) do
+  defp is_opponent(:empty, _my_color) do
     false
   end
 
@@ -231,56 +318,63 @@ defmodule Board do
 
   defp string_to_position(string_position) do
     gp = String.graphemes(string_position)
-    x = case Enum.at(gp, 0) do
-      "a" -> 0
-      "b" -> 1
-      "c" -> 2
-      "d" -> 3
-      "e" -> 4
-      "f" -> 5
-      "g" -> 6
-      "h" -> 7
-      _ -> 9
-    end
-    y = case Enum.at(gp, 1) do
-      "1" -> 0
-      "2" -> 1
-      "3" -> 2
-      "4" -> 3
-      "5" -> 4
-      "6" -> 5
-      "7" -> 6
-      "8" -> 7
-      _ -> 9
-    end
+
+    x =
+      case Enum.at(gp, 0) do
+        "a" -> 0
+        "b" -> 1
+        "c" -> 2
+        "d" -> 3
+        "e" -> 4
+        "f" -> 5
+        "g" -> 6
+        "h" -> 7
+        _ -> 9
+      end
+
+    y =
+      case Enum.at(gp, 1) do
+        "1" -> 0
+        "2" -> 1
+        "3" -> 2
+        "4" -> 3
+        "5" -> 4
+        "6" -> 5
+        "7" -> 6
+        "8" -> 7
+        _ -> 9
+      end
 
     {x, y}
   end
 
   defp position_to_string({x, y}) do
-    f = case x do
-      0 -> "a"
-      1 -> "b"
-      2 -> "c"
-      3 -> "d"
-      4 -> "e"
-      5 -> "f"
-      6 -> "g"
-      7 -> "h"
-      _ -> 9
-    end
-    r = case y do
-      0 -> "1"
-      1 -> "2"
-      2 -> "3"
-      3 -> "4"
-      4 -> "5"
-      5 -> "6"
-      6 -> "7"
-      7 -> "8"
-      _ -> 9
-    end
-    f<>r
-  end
+    f =
+      case x do
+        0 -> "a"
+        1 -> "b"
+        2 -> "c"
+        3 -> "d"
+        4 -> "e"
+        5 -> "f"
+        6 -> "g"
+        7 -> "h"
+        _ -> 9
+      end
 
+    r =
+      case y do
+        0 -> "1"
+        1 -> "2"
+        2 -> "3"
+        3 -> "4"
+        4 -> "5"
+        5 -> "6"
+        6 -> "7"
+        7 -> "8"
+        _ -> 9
+      end
+
+    f <> r
+  end
 end
