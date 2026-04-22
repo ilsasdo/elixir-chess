@@ -1,7 +1,7 @@
 defmodule Chess.Infrastructure.Games do
 
   def list_games() do
-    []
+    [%{:id => 1}, %{:id => 2}, %{:id => 3}]
   end
 
   def get_game!(id) do

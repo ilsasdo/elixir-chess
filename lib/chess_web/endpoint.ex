@@ -12,4 +12,9 @@ defmodule ChessWeb.Endpoint do
   plug Plug.Head
 
   plug ChessWeb.Router
+
+  if code_reloading? do
+    plug Phoenix.CodeReloader
+    plug Phoenix.LiveReloader
+  end
 end
