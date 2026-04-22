@@ -13,8 +13,9 @@ defmodule ChessWeb.Router do
     pipe_through :api
 
     get "/games", GameController, :index
+    post "/games", GameController, :create
     get "/games/:id", GameController, :show
-    post "/games/:id/move", GameController, :move
+    put "/games/:id/move", GameController, :move
   end
 
   scope "/", ChessWeb do

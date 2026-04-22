@@ -12,13 +12,8 @@ defmodule ChessWeb.GameController do
   end
 
   def move(conn, %{"id" => id, "from" => from, "to" => to}) do
-    case Chess.Infrastructure.Games.make_move(id, from, to) do
-      {:ok, game} ->
-        json(conn, game)
-
-      {:error, reason} ->
-        conn |> put_status(:bad_request) |> json(%{error: inspect(reason)})
-    end
+    board = Chess.Infrastructure.Games.make_move(id, from, to)
+    json(conn, to_json(id, board))
   end
 
   defp to_json(id, board) do
