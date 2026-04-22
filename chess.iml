@@ -63,5 +63,13 @@
     <orderEntry type="library" name="mime" level="project" />
     <orderEntry type="library" name="websock" level="project" />
     <orderEntry type="library" name="credo" level="project" />
+    <orderEntry type="library" name="postgrex" level="project" />
+    <orderEntry type="library" name="db_connection" level="project" />
+    <orderEntry type="library" name="myxql" level="project" />
+    <orderEntry type="library" name="tds" level="project" />
+    <orderEntry type="library" name="benchee" level="project" />
+    <orderEntry type="library" name="table" level="project" />
+    <orderEntry type="library" name="decimal" level="project" />
+    <orderEntry type="library" name="stream_data" level="project" />
   </component>
 </module>
