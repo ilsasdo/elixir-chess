@@ -5,6 +5,18 @@ defmodule ChessWeb.Router do
     plug :accepts, ["html"]
   end
 
+  pipeline :api do
+    plug :accepts, ["json"]
+  end
+
+  scope "/api", ChessWeb do
+    pipe_through :api
+
+    get "/games", GameController, :index
+    get "/games/:id", GameController, :show
+    post "/games/:id/move", GameController, :move
+  end
+
   scope "/", ChessWeb do
     pipe_through :browser
 

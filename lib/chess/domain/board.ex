@@ -1,4 +1,4 @@
-defmodule Chess.Board do
+defmodule Chess.Domain.Board do
   defstruct squares: %{}
 
   @type position :: {0..7, 0..7}
@@ -89,14 +89,14 @@ defmodule Chess.Board do
     }
   end
 
-  @spec get_square(squares(), position()) :: square()
-  def get_square(squares, {x, y}) do
-    get_square(squares, x, y)
+  @spec get_square(t(), position()) :: square()
+  def get_square(board, {x, y}) do
+    get_square(board, x, y)
   end
 
-  @spec get_square(squares(), integer(), integer()) :: square()
-  def get_square(squares, x, y) do
-    square = squares[{x, y}]
+  @spec get_square(t(), integer(), integer()) :: square()
+  def get_square(board, x, y) do
+    square = board.squares[{x, y}]
 
     if is_nil(square) do
       :empty
@@ -124,24 +124,24 @@ defmodule Chess.Board do
     |> Enum.take_while(&is_valid_position/1)
   end
 
-  @spec get_moves(squares(), position()) :: [position()]
-  def get_moves(squares, {x, y}) do
-    sq = get_square(squares, {x, y})
+  @spec get_moves(t(), position()) :: [position()]
+  def get_moves(board, {x, y}) do
+    sq = get_square(board, {x, y})
 
     case sq do
       :empty -> []
-      {shape, color} -> get_moves(squares, {x, y}, shape, color)
+      {shape, color} -> get_moves(board, {x, y}, shape, color)
     end
   end
 
-  @spec get_moves(squares(), String.t()) :: [String.t()]
-  def get_moves(squares, string_position) when is_binary(string_position) do
+  @spec get_moves(t(), String.t()) :: [String.t()]
+  def get_moves(board, string_position) when is_binary(string_position) do
     pos = string_position |> string_to_position
-    get_moves(squares, pos) |> Enum.map(&position_to_string/1)
+    get_moves(board, pos) |> Enum.map(&position_to_string/1)
   end
 
-  @spec get_moves(squares(), position()) :: [position()]
-  def get_moves(squares, position, :pawn, :white) do
+  @spec get_moves(t(), position()) :: [position()]
+  def get_moves(board, position, :pawn, :white) do
     pos_n = pos(position, :n)
     pos_nn = pos(pos_n, :n)
     pos_ne = pos(pos_n, :e)
@@ -153,12 +153,12 @@ defmodule Chess.Board do
       {pos_ne, &is_opponent(&1, :white)},
       {pos_nw, &is_opponent(&1, :white)}
     ]
-    |> Enum.filter(fn {p, f} -> f.(get_square(squares, p)) end)
+    |> Enum.filter(fn {p, f} -> f.(get_square(board, p)) end)
     |> Enum.map(fn {p, _f} -> p end)
   end
 
-  @spec get_moves(squares(), position()) :: [position()]
-  def get_moves(squares, position, :pawn, :black) do
+  @spec get_moves(t(), position()) :: [position()]
+  def get_moves(board, position, :pawn, :black) do
     pos_s = pos(position, :s)
     pos_ss = pos(pos_s, :s)
     pos_se = pos(pos_s, :e)
@@ -170,12 +170,12 @@ defmodule Chess.Board do
       {pos_se, &is_opponent(&1, :black)},
       {pos_sw, &is_opponent(&1, :black)}
     ]
-    |> Enum.filter(fn {p, f} -> f.(get_square(squares, p)) end)
+    |> Enum.filter(fn {p, f} -> f.(get_square(board, p)) end)
     |> Enum.map(fn {p, _f} -> p end)
   end
 
-  @spec get_moves(squares(), position()) :: [position()]
-  def get_moves(squares, position, :knight, color) do
+  @spec get_moves(t(), position()) :: [position()]
+  def get_moves(board, position, :knight, color) do
     pos_nne = position |> pos(:n) |> pos(:n) |> pos(:e)
     pos_nnw = position |> pos(:n) |> pos(:n) |> pos(:w)
     pos_sse = position |> pos(:s) |> pos(:s) |> pos(:e)
@@ -196,36 +196,36 @@ defmodule Chess.Board do
       pos_wws
     ]
     |> Enum.filter(fn p -> is_valid_position(p) end)
-    |> Enum.filter(fn p -> is_empty_or_opponent(get_square(squares, p), color) end)
+    |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
   end
 
-  @spec get_moves(squares(), position()) :: [position()]
-  def get_moves(squares, {x, y}, :rook, color) do
-    range_n = pos_range({x, y}, :n) |> take_until_inclusive(fn p -> !is_empty(get_square(squares, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(squares, p), color) end)
-    range_s = pos_range({x, y}, :s) |> take_until_inclusive(fn p -> !is_empty(get_square(squares, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(squares, p), color) end)
-    range_w = pos_range({x, y}, :w) |> take_until_inclusive(fn p -> !is_empty(get_square(squares, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(squares, p), color) end)
-    range_e = pos_range({x, y}, :e) |> take_until_inclusive(fn p -> !is_empty(get_square(squares, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(squares, p), color) end)
+  @spec get_moves(t(), position()) :: [position()]
+  def get_moves(board, {x, y}, :rook, color) do
+    range_n = pos_range({x, y}, :n) |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
+    range_s = pos_range({x, y}, :s) |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
+    range_w = pos_range({x, y}, :w) |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
+    range_e = pos_range({x, y}, :e) |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
 
     range_n ++ range_e ++ range_s ++ range_w
   end
 
-  @spec get_moves(squares(), position()) :: [position()]
-  def get_moves(squares, {x, y}, :bishop, color) do
-    range_ne = pos_range({x, y}, :ne) |> take_until_inclusive(fn p -> !is_empty(get_square(squares, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(squares, p), color) end)
-    range_nw = pos_range({x, y}, :nw) |> take_until_inclusive(fn p -> !is_empty(get_square(squares, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(squares, p), color) end)
-    range_se = pos_range({x, y}, :se) |> take_until_inclusive(fn p -> !is_empty(get_square(squares, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(squares, p), color) end)
-    range_sw = pos_range({x, y}, :sw) |> take_until_inclusive(fn p -> !is_empty(get_square(squares, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(squares, p), color) end)
+  @spec get_moves(t(), position()) :: [position()]
+  def get_moves(board, {x, y}, :bishop, color) do
+    range_ne = pos_range({x, y}, :ne) |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
+    range_nw = pos_range({x, y}, :nw) |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
+    range_se = pos_range({x, y}, :se) |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
+    range_sw = pos_range({x, y}, :sw) |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
 
     range_ne ++ range_nw ++ range_se ++ range_sw
   end
 
-  @spec get_moves(squares(), position()) :: [position()]
-  def get_moves(squares, {x, y}, :queen, color) do
-    Enum.concat(get_moves(squares, {x, y}, :bishop, color), get_moves(squares, {x, y}, :rook, color))
+  @spec get_moves(t(), position()) :: [position()]
+  def get_moves(board, {x, y}, :queen, color) do
+    Enum.concat(get_moves(board, {x, y}, :bishop, color), get_moves(board, {x, y}, :rook, color))
   end
 
-  @spec get_moves(squares(), position()) :: [position()]
-  def get_moves(squares, position, :king, color) do
+  @spec get_moves(t(), position()) :: [position()]
+  def get_moves(board, position, :king, color) do
     pos_n = position |> pos(:n)
     pos_s = position |> pos(:s)
     pos_e = position |> pos(:e)
@@ -246,7 +246,7 @@ defmodule Chess.Board do
       pos_sw
     ]
     |> Enum.filter(fn p -> is_valid_position(p) end)
-    |> Enum.filter(fn p -> is_empty_or_opponent(get_square(squares, p), color) end)
+    |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
   end
 
   defp take_until_inclusive([], _predicate) do
@@ -261,21 +261,21 @@ defmodule Chess.Board do
     end
   end
 
-  @spec move(squares(), position(), position()) :: squares()
-  def move(squares, position_from, position_to)
+  @spec move(t(), position(), position()) :: squares()
+  def move(board, position_from, position_to)
       when is_binary(position_from) and is_binary(position_to) do
     pos_from = string_to_position(position_from)
     pos_to = string_to_position(position_to)
-    move(squares, pos_from, pos_to)
+    move(board, pos_from, pos_to)
   end
 
-  @spec move(squares(), position(), position()) :: squares()
-  def move(squares, position_from, position_to) do
-    piece_from = squares[position_from]
+  @spec move(t(), position(), position()) :: squares()
+  def move(board, position_from, position_to) do
+    piece_from = board.squares[position_from]
 
-    squares
-    |> Map.put(position_from, :empty)
-    |> Map.put(position_to, piece_from)
+    %{board | squares: board.squares
+                       |> Map.put(position_from, :empty)
+                       |> Map.put(position_to, piece_from)}
   end
 
   defp is_pawn_starting_position({_x, y}, color) do
