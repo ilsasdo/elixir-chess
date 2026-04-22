@@ -1,4 +1,4 @@
-defmodule ChessTest do
+defmodule Chess.BoardTest do
   use ExUnit.Case
   doctest Board
 

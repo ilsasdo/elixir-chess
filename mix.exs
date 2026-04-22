@@ -14,6 +14,7 @@ defmodule Chess.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
+      mod: {Chess.Application, []},
       extra_applications: [:logger]
     ]
   end
@@ -22,9 +23,12 @@ defmodule Chess.MixProject do
   defp deps do
     [
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
-      {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false}
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:phoenix, "~> 1.7"},
+      {:phoenix_html, "~> 3.3"},
+      {:phoenix_live_reload, "~> 1.4", only: :dev},
+      {:plug_cowboy, "~> 2.6"},
+      {:jason, "~> 1.2"},
     ]
   end
 end
