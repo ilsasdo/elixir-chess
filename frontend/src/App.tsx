@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react'
 import {BrowserRouter, Link, Route, Routes, useParams} from 'react-router-dom'
 import './App.css'
-import {type Game, getGame, listGames, makeMove} from './GameApi'
+import {type Game, createGame, getGame, listGames, makeMove} from './GameApi'
 
 type GameHeader = {
   id: number
@@ -110,6 +110,7 @@ function ChessBoard() {
 
 function GameList() {
   const [games, setGames] = useState<GameHeader[]>([])
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     listGames()
@@ -119,11 +120,22 @@ function GameList() {
     .catch((error) => {
       console.error(error)
     })
-  }, [])
+  }, [refreshKey])
+
+  const handleCreateGame = () => {
+    createGame()
+    .then(() => {
+      setRefreshKey((k) => k + 1)
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+  }
 
   return (
       <>
         <h1>Available Games</h1>
+        <button onClick={handleCreateGame}>Create New Game</button>
         <ul>
           {games.map((game) => (
               <li key={game.id}>

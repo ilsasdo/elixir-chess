@@ -3,7 +3,7 @@ defmodule ChessWeb.GameController do
 
   def index(conn, _params) do
     games = Chess.Infrastructure.Games.list_games()
-    json(conn, games)
+    json(conn, games |> Enum.map(&to_json(&1)))
   end
 
   def create(conn, _params) do
@@ -19,6 +19,13 @@ defmodule ChessWeb.GameController do
   def move(conn, %{"id" => id, "from" => from, "to" => to}) do
     board = Chess.Infrastructure.Games.make_move(id, from, to)
     json(conn, to_json(id, board))
+  end
+
+  defp to_json(board) do
+    %{
+      id: board.id,
+      board: squares_to_json(board.squares)
+    }
   end
 
   defp to_json(id, board) do

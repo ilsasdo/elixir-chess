@@ -1,5 +1,5 @@
 defmodule Chess.Domain.Board do
-  defstruct squares: %{}
+  defstruct id: 0, squares: %{}
 
   @type position :: {0..7, 0..7}
   @type color :: :white | :black
@@ -9,12 +9,14 @@ defmodule Chess.Domain.Board do
   @type squares :: %{position() => square()}
 
   @type t :: %__MODULE__{
+          id: integer(),
           squares: squares()
         }
 
   @spec new :: t()
   def new do
     %__MODULE__{
+      id: 0,
       squares: init()
     }
   end
