@@ -1,30 +1,115 @@
 .board {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  aspect-ratio: 1 / 1;
-  gap: 0px;
+  grid-template-columns: repeat(8, 60px);
+  grid-template-rows: repeat(8, 60px);
+  border: 3px solid #5d4e37;
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 .cell {
-  width: 100%;
-  height: 100%;
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #ccc;
   box-sizing: border-box;
+  font-size: 2.8rem;
+  cursor: pointer;
+  transition: filter 0.1s ease;
+}
+
+.cell-light {
+  background: #f0d9b5;
+}
+
+.cell-dark {
+  background: #b58863;
+}
+
+.cell:hover {
+  filter: brightness(1.15);
+}
+
+.cell-light.selected {
+  background: #829769;
+  box-shadow: inset 0 0 0 3px #f7ec74;
+}
+
+.cell-dark.selected {
+  background: #646F40;
+  box-shadow: inset 0 0 0 3px #f7ec74;
+}
+
+.piece {
+  text-shadow: 1px 2px 3px rgba(0, 0, 0, 0.35);
+}
+
+.piece-white {
+  color: #fff;
+  filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.5));
+}
+
+.piece-black {
+  color: #1a1a1a;
+}
+
+.board-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+}
+
+.board-wrapper {
+  display: flex;
+  gap: 8px;
+}
+
+.rank-labels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.rank-label {
+  width: 20px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #5d4e37;
+  font-size: 0.85rem;
 }
 
 .board-header {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(8, 60px);
+  justify-content: center;
 }
 
 .board-header div {
-  width: 100%;
+  width: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
+  font-weight: 600;
+  color: #5d4e37;
+  font-size: 0.85rem;
+}
+
+.game-title {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: #333;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.game-title span {
+  font-weight: 600;
+  color: #1a1a1a;
 }
