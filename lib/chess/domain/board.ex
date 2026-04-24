@@ -19,6 +19,62 @@ defmodule Chess.Domain.Board do
     }
   end
 
+  @spec to_fen(t()) :: string()
+  def to_fen(board) do
+    board_fen =
+      7..0
+      |> Enum.map(fn y ->
+        0..7
+        |> Enum.map(fn x -> piece_to_fen(get_square(board, {x, y})) end)
+        |> Enum.join()
+        |> String.replace("11111111", "8")
+        |> String.replace("1111111", "7")
+        |> String.replace("111111", "6")
+        |> String.replace("11111", "5")
+        |> String.replace("1111", "4")
+        |> String.replace("111", "3")
+        |> String.replace("11", "2")
+      end)
+      |> Enum.join("/")
+
+    board_fen <> " w KQkq - 0 1"
+  end
+
+  @spec from_fen(string()) :: t()
+  def from_fen(fen) do
+    [board_fen, _turn, _castle, _en_passant, _halfmove_clock, _fullmove_clock] =
+      String.split(fen, " ")
+
+    rows =
+      board_fen
+      |> String.replace("8", "11111111")
+      |> String.replace("7", "1111111")
+      |> String.replace("6", "111111")
+      |> String.replace("5", "11111")
+      |> String.replace("4", "1111")
+      |> String.replace("3", "111")
+      |> String.replace("2", "11")
+      |> String.split("/")
+      |> Enum.reverse()
+
+    # for each row, produce
+    squares = rows
+    |> Enum.with_index()
+    |> Enum.flat_map(fn {row, y} ->
+      row
+        |> String.graphemes()
+        |> Enum.with_index()
+        |> Enum.map(fn {col, x} ->
+        {x, y, fen_to_piece(col)}
+      end)
+    end)
+    |> Enum.reduce(%{}, fn {x, y, piece}, acc -> Map.put(acc, {x, y}, piece) end)
+    require IEx; IEx.pry()
+    %__MODULE__{
+      squares: squares
+    }
+  end
+
   @spec init :: squares()
   defp init do
     %{
@@ -89,6 +145,11 @@ defmodule Chess.Domain.Board do
     }
   end
 
+  @spec get_square(t(), string()) :: square()
+  def get_square(board, string_position) when is_binary(string_position) do
+    get_square(board, string_to_position(string_position))
+  end
+
   @spec get_square(t(), position()) :: square()
   def get_square(board, {x, y}) do
     get_square(board, x, y)
@@ -112,10 +173,10 @@ defmodule Chess.Domain.Board do
       :s -> {x, y - 1}
       :e -> {x + 1, y}
       :w -> {x - 1, y}
-      :ne -> ({x, y} |> pos(:n) |> pos(:e))
-      :nw -> ({x, y} |> pos(:n) |> pos(:w))
-      :se -> ({x, y} |> pos(:s) |> pos(:e))
-      :sw -> ({x, y} |> pos(:s) |> pos(:w))
+      :ne -> {x, y} |> pos(:n) |> pos(:e)
+      :nw -> {x, y} |> pos(:n) |> pos(:w)
+      :se -> {x, y} |> pos(:s) |> pos(:e)
+      :sw -> {x, y} |> pos(:s) |> pos(:w)
     end
   end
 
@@ -201,20 +262,50 @@ defmodule Chess.Domain.Board do
 
   @spec get_moves(t(), position()) :: [position()]
   def get_moves(board, {x, y}, :rook, color) do
-    range_n = pos_range({x, y}, :n) |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
-    range_s = pos_range({x, y}, :s) |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
-    range_w = pos_range({x, y}, :w) |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
-    range_e = pos_range({x, y}, :e) |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
+    range_n =
+      pos_range({x, y}, :n)
+      |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end)
+      |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
+
+    range_s =
+      pos_range({x, y}, :s)
+      |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end)
+      |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
+
+    range_w =
+      pos_range({x, y}, :w)
+      |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end)
+      |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
+
+    range_e =
+      pos_range({x, y}, :e)
+      |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end)
+      |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
 
     range_n ++ range_e ++ range_s ++ range_w
   end
 
   @spec get_moves(t(), position()) :: [position()]
   def get_moves(board, {x, y}, :bishop, color) do
-    range_ne = pos_range({x, y}, :ne) |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
-    range_nw = pos_range({x, y}, :nw) |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
-    range_se = pos_range({x, y}, :se) |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
-    range_sw = pos_range({x, y}, :sw) |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end) |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
+    range_ne =
+      pos_range({x, y}, :ne)
+      |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end)
+      |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
+
+    range_nw =
+      pos_range({x, y}, :nw)
+      |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end)
+      |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
+
+    range_se =
+      pos_range({x, y}, :se)
+      |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end)
+      |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
+
+    range_sw =
+      pos_range({x, y}, :sw)
+      |> take_until_inclusive(fn p -> !is_empty(get_square(board, p)) end)
+      |> Enum.filter(fn p -> is_empty_or_opponent(get_square(board, p), color) end)
 
     range_ne ++ range_nw ++ range_se ++ range_sw
   end
@@ -273,9 +364,13 @@ defmodule Chess.Domain.Board do
   def move(board, position_from, position_to) do
     piece_from = board.squares[position_from]
 
-    %{board | squares: board.squares
-                       |> Map.put(position_from, :empty)
-                       |> Map.put(position_to, piece_from)}
+    %{
+      board
+      | squares:
+          board.squares
+          |> Map.put(position_from, :empty)
+          |> Map.put(position_to, piece_from)
+    }
   end
 
   defp is_pawn_starting_position({_x, y}, color) do
@@ -376,5 +471,42 @@ defmodule Chess.Domain.Board do
       end
 
     f <> r
+  end
+
+  defp fen_to_piece(fen) do
+    case fen do
+      "P" -> {:pawn, :white}
+      "p" -> {:pawn, :black}
+      "R" -> {:rook, :white}
+      "r" -> {:rook, :black}
+      "B" -> {:bishop, :white}
+      "b" -> {:bishop, :black}
+      "N" -> {:knight, :white}
+      "n" -> {:knight, :black}
+      "K" -> {:king, :white}
+      "k" -> {:king, :black}
+      "Q" -> {:queen, :white}
+      "q" -> {:queen, :black}
+      _ -> :empty
+    end
+  end
+
+  defp piece_to_fen(piece) do
+    piece_string =
+      case piece do
+        {:pawn, _} -> "p"
+        {:rook, _} -> "r"
+        {:queen, _} -> "q"
+        {:knight, _} -> "n"
+        {:king, _} -> "k"
+        {:bishop, _} -> "b"
+        _ -> "1"
+      end
+
+    case piece do
+      {_, :white} -> piece_string |> String.upcase()
+      {_, :black} -> piece_string
+      _ -> piece_string
+    end
   end
 end

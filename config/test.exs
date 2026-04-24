@@ -5,7 +5,7 @@ config :chess,
   http: [ip: {127, 0, 0, 1}, port: 4000],
   url: [host: "localhost"],
   debug_errors: true,
-  code_reloader: true,
+  code_reloader: false,
   check_origin: false,
   watchers: [],
   server: true

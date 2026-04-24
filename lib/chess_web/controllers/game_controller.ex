@@ -6,6 +6,11 @@ defmodule ChessWeb.GameController do
     json(conn, games)
   end
 
+  def create(conn, _params) do
+    game = Chess.Infrastructure.Games.create()
+    json(conn, to_json(game.id, game))
+  end
+
   def show(conn, %{"id" => id}) do
     board = Chess.Infrastructure.Games.get_game!(id)
     json(conn, to_json(id, board))

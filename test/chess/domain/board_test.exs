@@ -117,4 +117,27 @@ defmodule Chess.Domain.BoardTest do
     assert Chess.Domain.Board.get_square(board, {0, 1}) == :empty
     assert Chess.Domain.Board.get_square(board, {0, 2}) == {:pawn, :white}
   end
+
+  test "should return a proper fen string" do
+    board = Chess.Domain.Board.new()
+    fen = Chess.Domain.Board.to_fen(board)
+    assert fen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
+    after_move = Chess.Domain.Board.move(board, "e2", "e4")
+    fen_after_move = Chess.Domain.Board.to_fen(after_move)
+    assert fen_after_move == "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1"
+  end
+
+  test "should return a board parsed from a fen string" do
+    board = Chess.Domain.Board.from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    assert Chess.Domain.Board.get_square(board, "a1") == {:rook, :white}
+    assert Chess.Domain.Board.get_square(board, "h8") == {:rook, :black}
+
+    fen_after_move = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1"
+    board_after_move = Chess.Domain.Board.from_fen(fen_after_move)
+    assert Chess.Domain.Board.get_square(board_after_move, "a1") == {:rook, :white}
+    assert Chess.Domain.Board.get_square(board_after_move, "h8") == {:rook, :black}
+    assert Chess.Domain.Board.get_square(board_after_move, "e2") == :empty
+    assert Chess.Domain.Board.get_square(board_after_move, "e4") == {:pawn, :white}
+  end
 end
