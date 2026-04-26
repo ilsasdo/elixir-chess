@@ -14,16 +14,33 @@ defmodule Chess.Infrastructure.Games do
   end
 
   def get_game!(id) do
-    Chess.Domain.Board.new()
+    game = Chess.Repo.get(Chess.Infrastructure.Schema.Game, id)
+    to_domain_game(game)
   end
 
   def make_move(id, from, to) do
-    board = Chess.Domain.Board.new()
-    Chess.Domain.Board.move(board, from, to)
+    db_game = Chess.Repo.get(Chess.Infrastructure.Schema.Game, id)
+
+    domain_game = db_game
+    |> to_domain_game()
+    |> Chess.Domain.Board.move(from, to)
+
+    fen = Chess.Domain.Board.to_fen(domain_game)
+
+    db_game
+    |> Chess.Infrastructure.Schema.Game.changeset(%{fen: fen})
+    |> Chess.Repo.update()
+
+    domain_game
   end
 
   defp to_domain_game(db_game) do
     domain_game = Chess.Domain.Board.from_fen(db_game.fen)
     %{domain_game | id: db_game.id}
+  end
+
+  defp to_db_game(domain_game) do
+    fen = Chess.Domain.Board.to_fen(domain_game)
+    %Chess.Infrastructure.Schema.Game{:id => domain_game.id, :fen => fen}
   end
 end
