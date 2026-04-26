@@ -20,3 +20,14 @@ config :chess, Chess.Repo,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+
+config :chess, ecto_repos: [Chess.Repo], event_stores: [
+                                           Chess.Infrastructure.EventStore
+]
+
+config :chess, Chess.Infrastructure.EventStore,
+       serializer: Commanded.Serialization.JsonSerializer,
+       username: "postgres",
+       password: "postgres",
+       database: "chess_eventstore_dev",
+       hostname: "localhost"

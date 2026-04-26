@@ -71,5 +71,16 @@
     <orderEntry type="library" name="table" level="project" />
     <orderEntry type="library" name="decimal" level="project" />
     <orderEntry type="library" name="stream_data" level="project" />
+    <orderEntry type="library" name="commanded" level="project" />
+    <orderEntry type="library" name="commanded_ecto_projections" level="project" />
+    <orderEntry type="library" name="eventstore" level="project" />
+    <orderEntry type="library" name="backoff" level="project" />
+    <orderEntry type="library" name="telemetry_registry" level="project" />
+    <orderEntry type="library" name="benchfella" level="project" />
+    <orderEntry type="library" name="local_cluster" level="project" />
+    <orderEntry type="library" name="mox" level="project" />
+    <orderEntry type="library" name="fsm" level="project" />
+    <orderEntry type="library" name="gen_stage" level="project" />
+    <orderEntry type="library" name="poolboy" level="project" />
   </component>
 </module>

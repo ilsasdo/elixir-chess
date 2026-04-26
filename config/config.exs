@@ -7,7 +7,15 @@ config :chess,
        server: true,
        render_errors: [formats: [html: ChessWeb.ErrorHTML]]
 
-config :chess, ecto_repos: [Chess.Repo]
+config :chess, ecto_repos: [Chess.Repo], event_stores: [Chess.Infrastructure.EventStore]
+
+config :chess, Chess.Infrastructure.EventStore,
+       serializer: Commanded.Serialization.JsonSerializer,
+       username: "postgres",
+       password: "postgres",
+       database: "chess_eventstore_dev",
+       hostname: "localhost"
+
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason

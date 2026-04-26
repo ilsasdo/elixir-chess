@@ -3,7 +3,9 @@ defmodule Chess.Application do
   # for more information on OTP Applications
   @moduledoc false
 
-  use Application
+  use Commanded.Application, otp_app: :chess, event_store: [
+    adapter: EventStore.Adapters.Postgres,
+    event_store: Chess.Infrastructure.EventStore]
 
   @impl true
   def start(_type, _args) do

@@ -32,6 +32,9 @@ defmodule Chess.MixProject do
       {:jason, "~> 1.2"},
       {:ecto_sql, "~> 3.13"},
       {:postgrex, ">= 0.0.0"},
+      {:commanded, "~> 1.4"},
+      {:commanded_ecto_projections, "~> 1.2"},
+      {:eventstore, "~> 1.4"}
     ]
   end
 end
