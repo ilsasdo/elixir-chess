@@ -1,5 +1,5 @@
 defmodule Chess.Domain.Board do
-  defstruct id: 0, squares: %{}
+  defstruct id: 0, squares: %{}, turn: :white
 
   @type position :: {0..7, 0..7}
   @type color :: :white | :black
@@ -17,7 +17,8 @@ defmodule Chess.Domain.Board do
   def new do
     %__MODULE__{
       id: 0,
-      squares: init()
+      squares: init(),
+      turn: :white
     }
   end
 
@@ -201,6 +202,15 @@ defmodule Chess.Domain.Board do
   def get_moves(board, string_position) when is_binary(string_position) do
     pos = string_position |> string_to_position
     get_moves(board, pos) |> Enum.map(&position_to_string/1)
+  end
+
+  @spec is_valid_move?(t(), String.t(), String.t()) :: boolean()
+  def is_valid_move?(board, from, to) do
+    valid_moves = get_moves(board, from)
+      |> Enum.filter(fn p -> p == to end)
+      |> Enum.count()
+
+    valid_moves > 0
   end
 
   @spec get_moves(t(), position()) :: [position()]

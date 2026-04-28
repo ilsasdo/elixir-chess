@@ -30,9 +30,11 @@ defmodule Chess.MixProject do
       {:phoenix_live_reload, "~> 1.4", only: :dev},
       {:plug_cowboy, "~> 2.6"},
       {:jason, "~> 1.2"},
+      {:uuid, "~> 1.1"},
       {:ecto_sql, "~> 3.13"},
       {:postgrex, ">= 0.0.0"},
       {:commanded, "~> 1.4"},
+      {:commanded_eventstore_adapter, "~> 1.4"},
       {:commanded_ecto_projections, "~> 1.2"},
       {:eventstore, "~> 1.4"}
     ]

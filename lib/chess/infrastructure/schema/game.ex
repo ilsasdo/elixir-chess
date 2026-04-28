@@ -3,6 +3,7 @@ defmodule Chess.Infrastructure.Schema.Game do
 
   schema "games" do
     field :fen, :string
+    field :uuid, Ecto.UUID, autogenerate: true
 
     timestamps()
   end

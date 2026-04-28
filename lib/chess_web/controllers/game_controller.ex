@@ -7,8 +7,20 @@ defmodule ChessWeb.GameController do
   end
 
   def create(conn, _params) do
-    game = Chess.Infrastructure.Games.create()
-    json(conn, to_json(game.id, game))
+    cmd = %Chess.Domain.Commands.CreateGame{id: UUID.uuid4()}
+
+    res = Chess.CommandedApplication.dispatch(cmd)
+    #    json(conn, res)
+    IO.inspect(res, label: "DEBUG" )
+    case res do
+      {:error, reason} ->
+        conn |> put_status(400) |> json(%{error: "error"})
+
+      _ ->
+        conn |> json(%{status: "ok"})
+    end
+
+    # json(conn, %{status: "ok"})
   end
 
   def show(conn, %{"id" => id}) do
@@ -17,8 +29,15 @@ defmodule ChessWeb.GameController do
   end
 
   def move(conn, %{"id" => id, "from" => from, "to" => to}) do
-    board = Chess.Infrastructure.Games.make_move(id, from, to)
-    json(conn, to_json(id, board))
+    cmd = %Chess.Domain.Commands.MakeMove{id: id, from: from, to: to}
+
+    case Chess.CommandedApplication.dispatch(cmd) do
+      :ok ->
+        json(conn, %{status: "ok"})
+
+      {:error, reason} ->
+        conn |> put_status(400) |> json(%{error: reason})
+    end
   end
 
   defp to_json(board) do

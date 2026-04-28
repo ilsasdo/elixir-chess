@@ -3,9 +3,7 @@ defmodule Chess.Application do
   # for more information on OTP Applications
   @moduledoc false
 
-  use Commanded.Application, otp_app: :chess, event_store: [
-    adapter: EventStore.Adapters.Postgres,
-    event_store: Chess.Infrastructure.EventStore]
+  use Application
 
   @impl true
   def start(_type, _args) do
@@ -18,7 +16,8 @@ defmodule Chess.Application do
       # {Chess.Worker, arg},
       # Start to serve requests, typically the last entry
       ChessWeb.Endpoint,
-      Chess.Repo
+      Chess.Repo,
+      Chess.CommandedApplication
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
