@@ -17,7 +17,8 @@ defmodule Chess.Application do
       # Start to serve requests, typically the last entry
       ChessWeb.Endpoint,
       Chess.Repo,
-      Chess.CommandedApplication
+      Chess.CommandedApplication,
+      Chess.Infrastructure.GameProjection
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
